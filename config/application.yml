@@ -1,0 +1,3 @@
+application:
+  web-folder-upload:
+    store-path: F:\nginx\
