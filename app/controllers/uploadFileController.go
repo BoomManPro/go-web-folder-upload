@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
 	"web-folder-upload/config"
-	"web-folder-upload/utils"
+	"web-folder-upload/models"
 )
 
 //上传文件handler
@@ -30,40 +33,77 @@ func UploadFolderHandler(w http.ResponseWriter, r *http.Request) {
 		//get the *fileheaders
 		files := m.File["folder"]
 
-		for i, _ := range files {
-			//StorePath 去除末尾 /
-			filePath := config.StorePath + path + files[i].Filename
-			//for each fileheader, get a handle to the actual file
-			file, err := files[i].Open()
-			defer file.Close()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			//create destination file making sure the path is writeable.
-			createFile(filePath)
-			dst, err := os.Create(filePath)
-			defer dst.Close()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			//copy the uploaded file to the destination file
-			if _, err := io.Copy(dst, file); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
+		if files != nil {
+			err = uploadFolder(path, files)
 		}
+		file := m.File["file"]
+		if file != nil {
+			err = uploadFile(path, file[0])
+		}
+
+		if err != nil {
+			result, _ := json.Marshal(models.ResultVo{
+				Code:     50000,
+				ShowMsg:  "Error",
+				ErrorMsg: err.Error(),
+				Data:     nil,
+			})
+			fmt.Fprint(w, string(result))
+
+			return
+		}
+
+		result, _ := json.Marshal(models.ResultVo{
+			Code:     20000,
+			ShowMsg:  "SUCCESS",
+			ErrorMsg: "",
+			Data:     nil,
+		})
+
+		fmt.Fprint(w, string(result))
 
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
+func uploadFile(path string, file0 *multipart.FileHeader) error {
+	//StorePath 去除末尾 /
+	filePath := config.StorePath + path + file0.Filename
+	//for each fileheader, get a handle to the actual file
+	file, err := file0.Open()
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	//create destination file making sure the path is writeable.
+	createFile(filePath)
+	dst, err := os.Create(filePath)
+	defer dst.Close()
+	if err != nil {
+		return err
+	}
+	//copy the uploaded file to the destination file
+	if _, err := io.Copy(dst, file); err != nil {
+		return err
+	}
+	return nil
+}
+
+func uploadFolder(path string, files []*multipart.FileHeader) error {
+	for i, _ := range files {
+		err := uploadFile(path, files[i])
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
 //调用os.MkdirAll递归创建文件夹
 func createFile(filePath string) error {
-	dir := utils.Substr(filePath, 0, strings.LastIndex(filePath, "/"))
+	dir := filePath[0:strings.LastIndex(filePath, "/")]
 	if !isExist(dir) {
 		err := os.MkdirAll(dir, os.ModePerm)
 		return err
