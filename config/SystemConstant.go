@@ -4,6 +4,13 @@ const ApiList = "/api/list/"
 
 const Preview = "/preview/"
 
-const PreviewPath = "/preview"
+var PreviewPath = Preview[0 : len(Preview)-1]
 
-const StorePath = "F:/nginx/"
+var StorePath = "F:/nginx/"
+
+var StorePathPrefix = ""
+
+func InitStorePath(path string) {
+	StorePath = path
+	StorePathPrefix = StorePath[0 : len(StorePath)-1]
+}

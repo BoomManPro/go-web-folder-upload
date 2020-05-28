@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	application := config.GetApplicationConfigFromYml("./config/application.yml")
+	config.InitStorePath(application.StorePath)
 	// preview
 	http.Handle(config.Preview, http.StripPrefix(config.Preview, http.FileServer(http.Dir(config.StorePath))))
 	//前端静态界面接口
@@ -18,6 +20,7 @@ func main() {
 	http.HandleFunc("/api/uploadDirectory", controllers.UploadFolderHandler)
 	//上传文件夹接口
 	http.HandleFunc("/api/uploadFile", controllers.UploadFolderHandler)
-	e := http.ListenAndServe(":8080", nil)
+	fmt.Printf("服务启动成功,服务端口:[%s]", application.ServerPort)
+	e := http.ListenAndServe(":"+application.ServerPort, nil)
 	fmt.Println(e)
 }

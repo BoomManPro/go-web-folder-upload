@@ -3,7 +3,8 @@ package config
 import "go.uber.org/config"
 
 type StoreConfig struct {
-	StorePath string `yaml:"store-path"`
+	ServerPort string `yaml:"server-port"`
+	StorePath  string `yaml:"store-path"`
 }
 
 func GetApplicationConfigFromYml(path string) *StoreConfig {
@@ -15,7 +16,7 @@ func GetApplicationConfigFromYml(path string) *StoreConfig {
 		panic(err) // handle error
 	}
 	var storeConfig StoreConfig
-	if err := provider.Get("application.web-folder-upload").Populate(&storeConfig); err != nil {
+	if err := provider.Get("application").Populate(&storeConfig); err != nil {
 		panic(err)
 	}
 

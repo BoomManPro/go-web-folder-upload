@@ -68,8 +68,8 @@ func UploadFolderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func uploadFile(path string, file0 *multipart.FileHeader) error {
-	//StorePath 去除末尾 /
-	filePath := config.StorePath + path + file0.Filename
+
+	filePath := config.StorePathPrefix + path + file0.Filename
 	//for each fileheader, get a handle to the actual file
 	file, err := file0.Open()
 	defer file.Close()
