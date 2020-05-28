@@ -24,10 +24,15 @@ func UploadFolderHandler(w http.ResponseWriter, r *http.Request) {
 		//get a ref to the parsed multipart form
 		m := r.MultipartForm
 
+		//path地址
+		path := m.Value["path"][0]
+
 		//get the *fileheaders
 		files := m.File["folder"]
+
 		for i, _ := range files {
-			filePath := config.StorePath + files[i].Filename
+			//StorePath 去除末尾 /
+			filePath := config.StorePath + path + files[i].Filename
 			//for each fileheader, get a handle to the actual file
 			file, err := files[i].Open()
 			defer file.Close()
