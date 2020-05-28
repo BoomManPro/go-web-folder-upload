@@ -17,6 +17,7 @@ func main() {
 	//上传文件接口
 	http.HandleFunc("/api/uploadDirectory", controllers.UploadFolderHandler)
 	//上传文件夹接口
+	http.HandleFunc("/api/uploadFile", controllers.UploadFolderHandler)
 	e := http.ListenAndServe(":8080", nil)
 	fmt.Println(e)
 }
